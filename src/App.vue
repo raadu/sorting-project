@@ -5,7 +5,6 @@
     <div v-if="showModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-
           <h3 class="modal-title">How many people?</h3>
           <button class="close-button" @click="showModal = false">&times;</button>
         </div>
@@ -25,24 +24,78 @@
 </template>
 
 <script>
+import { ref, onBeforeUnmount } from 'vue'
+
 export default {
-  data() {
-    return {
-      showModal: false,
-      numberOfPeople: 20,
-    }
-  },
-  methods: {
-    handleStart() {
-      if (this.numberOfPeople >= 20 && this.numberOfPeople <= 100) {
-        // Add your sorting logic here
-        console.log(`Starting sorting with ${this.numberOfPeople} people`)
-        this.showModal = false
+  setup() {
+    const showModal = ref(false);
+    const numberOfPeople = ref(20);
+    const people = ref([]);
+    const elapsedTime = ref(0);
+    const timer = ref(null);
+
+    const handleStart = () => {
+      if (numberOfPeople.value >= 20 && numberOfPeople.value <= 100) {
+        showModal.value = false;
+        generatePeople();
+        startTimer();
       } else {
-        alert('Please enter a number between 20 and 100')
+        alert("Please enter a number between 20 and 100");
       }
-    },
-  },
+    };
+
+    const generatePeople = () => {
+      const names = ["Alice", "Bob", "Charlie", "David", "Eva", "Frank", "Grace"];
+      const emails = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com"];
+      const uniquePotatoCounts = [];
+
+      while (uniquePotatoCounts.length < numberOfPeople.value) {
+        const randomPotatoCount = Math.floor(Math.random() * 1000) + 1;
+        if (!uniquePotatoCounts.includes(randomPotatoCount)) {
+          uniquePotatoCounts.push(randomPotatoCount);
+        }
+      }
+
+      people.value = uniquePotatoCounts.map((potatoCount, index) => ({
+        id: index + 1,
+        name: `${names[Math.floor(Math.random() * names.length)]} ${generateRandomString()}`,
+        email: `${generateRandomString()}@${emails[Math.floor(Math.random() * emails.length)]}`,
+        potatoes: potatoCount,
+      }));
+
+      console.log("Generated People:", people.value);
+    };
+
+    const generateRandomString = () => {
+      return Math.random().toString(36).substring(7);
+    };
+
+    const startTimer = () => {
+      elapsedTime.value = 0;
+      if (timer.value) clearInterval(timer.value);
+      timer.value = setInterval(() => {
+        elapsedTime.value++;
+      }, 1000);
+    };
+
+    onBeforeUnmount(() => {
+      if (timer.value) clearInterval(timer.value);
+    });
+
+    return {
+      showModal,
+      numberOfPeople,
+      people,
+      elapsedTime,
+      handleStart,
+      generatePeople,
+      generateRandomString,
+      startTimer,
+    };
+
+  }
+
+
 }
 </script>
 
@@ -138,10 +191,4 @@ export default {
   background-color: #ff9800;
   color: white;
 }
-
-/* input[type='number'] {
-  width: 100%;
-  padding: 5px;
-  margin: 10px 0;
-} */
 </style>
